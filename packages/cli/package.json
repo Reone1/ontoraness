@@ -8,7 +8,9 @@
   },
   "files": [
     "dist",
-    "templates"
+    "templates",
+    "docs",
+    "README.md"
   ],
   "scripts": {
     "build": "tsup && node scripts/copy-templates.mjs",

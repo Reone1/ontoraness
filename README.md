@@ -214,9 +214,12 @@ ontoraness report --metric test_coverage
 
 ## 문서
 
-- [시작 가이드](docs/getting-started.md)
-- [온톨로지 스키마 레퍼런스](docs/ontology-schema.md)
-- [컨텍스트 Tier 시스템](docs/context-tiers.md)
-- [서브 에이전트 설정](docs/sub-agents.md)
-- [CLI 레퍼런스](docs/cli-reference.md)
-- [npm 배포 가이드](docs/publishing.md)
+**사용자 문서** (패키지에 포함):
+- [시작 가이드](packages/cli/docs/getting-started.md)
+- [온톨로지 스키마 레퍼런스](packages/cli/docs/ontology-schema.md)
+- [컨텍스트 Tier 시스템](packages/cli/docs/context-tiers.md)
+- [서브 에이전트 설정](packages/cli/docs/sub-agents.md)
+- [CLI 레퍼런스](packages/cli/docs/cli-reference.md)
+
+**기여자 문서** (레포 전용):
+- [npm 배포 가이드](PUBLISHING.md)
