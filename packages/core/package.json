@@ -33,10 +33,10 @@
   ],
   "author": "",
   "license": "MIT",
-  "homepage": "https://github.com/your-org/ontoraness#readme",
+  "homepage": "https://github.com/Reone1/ontoraness#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/your-org/ontoraness.git"
+    "url": "git+https://github.com/Reone1/ontoraness.git"
   },
   "publishConfig": {
     "access": "public"
