@@ -1,0 +1,16 @@
+node_modules/
+dist/
+*.tsbuildinfo
+.env
+.env.local
+
+# 빌드 시 생성되는 templates 복사본
+packages/cli/templates/
+
+# ontoraness 적용 결과물 (재생성 가능)
+.ontoraness/docs/
+.ontoraness/stats.json
+.eslintrc.ontoraness.mjs
+
+# npm pack 결과물
+*.tgz

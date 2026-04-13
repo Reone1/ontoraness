@@ -1,0 +1,26 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"try{const {checkViolation}=await import('@ontoraness/core');await checkViolation(process.env.TOOL_INPUT)}catch(e){}\""
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"try{const {injectContext}=await import('@ontoraness/core');await injectContext(process.env.TOOL_INPUT)}catch(e){}\""
+          }
+        ]
+      }
+    ]
+  }
+}

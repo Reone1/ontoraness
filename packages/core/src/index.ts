@@ -1,0 +1,17 @@
+export * from "./ontology/schemas/index.js";
+export * from "./ontology/loader.js";
+export * from "./ontology/compiler.js";
+export * from "./harness/doc-renderer.js";
+export * from "./harness/hook-installer.js";
+export * from "./harness/context-injector.js";
+export * from "./harness/eslint-generator.js";
+export * from "./harness/stats/collector.js";
+export * from "./harness/stats/reporter.js";
+export * from "./adapters/claude-code.adapter.js";
+export * from "./scanner/project-scanner.js";
+export * from "./scanner/onboarding-agent.js";
+export * from "./importers/claude-memory.importer.js";
+export * from "./agents/base.agent.js";
+export * from "./agents/agent-runner.js";
+export { GptAgent } from "./agents/gpt.agent.js";
+export { GeminiAgent } from "./agents/gemini.agent.js";

@@ -1,0 +1,94 @@
+version: "1.0"
+kind: ArchitectureOntology
+metadata:
+  id: architecture
+  name: "아키텍처 규칙"
+  description: "ontoraness 모노레포 구조와 패키지 간 의존성 규칙"
+  tier: 2
+  tags: ["architecture", "monorepo", "dependency"]
+spec:
+  rules:
+    - id: core-no-cli-dep
+      name: "core는 cli에 의존하지 않음"
+      description: "packages/core는 packages/cli를 import하지 않음. 단방향 의존성 유지"
+      severity: error
+      enforcement: tier3
+      examples:
+        invalid:
+          - "packages/core에서 @ontoraness/cli import"
+        valid:
+          - "packages/cli에서 @ontoraness/core import"
+
+    - id: no-circular-internal
+      name: "패키지 내 순환 의존성 금지"
+      description: "같은 패키지 내에서 순환 참조 금지 (예: compiler → loader → compiler)"
+      severity: error
+      enforcement: tier3
+
+    - id: schema-first
+      name: "스키마 우선 설계"
+      description: "새 온톨로지 kind 추가 시 Zod 스키마를 먼저 정의한 뒤 구현"
+      severity: warning
+      enforcement: tier2
+      examples:
+        valid:
+          - "schemas/new-kind.schema.ts 작성 → compiler 업데이트 → renderer 업데이트"
+        invalid:
+          - "renderer에 먼저 렌더링 로직 작성 후 스키마 추가"
+
+    - id: fetch-over-sdk
+      name: "외부 AI API는 fetch 직접 호출"
+      description: "OpenAI, Gemini 등 서드파티 AI SDK는 의존성 추가 대신 fetch 직접 사용. Anthropic SDK만 예외"
+      severity: warning
+      enforcement: tier2
+
+  layers:
+    - name: "schemas"
+      path_pattern: "packages/core/src/ontology/schemas/**"
+      can_import_from: []
+      cannot_import_from: ["compiler", "harness", "adapters", "agents", "scanner"]
+
+    - name: "ontology-engine"
+      path_pattern: "packages/core/src/ontology/**"
+      can_import_from: ["schemas"]
+      cannot_import_from: ["harness", "adapters", "agents"]
+
+    - name: "harness"
+      path_pattern: "packages/core/src/harness/**"
+      can_import_from: ["schemas", "ontology-engine"]
+      cannot_import_from: ["adapters", "agents"]
+
+    - name: "adapters"
+      path_pattern: "packages/core/src/adapters/**"
+      can_import_from: ["schemas", "ontology-engine", "harness"]
+
+    - name: "agents"
+      path_pattern: "packages/core/src/agents/**"
+      can_import_from: ["schemas"]
+      cannot_import_from: ["harness", "adapters", "ontology-engine"]
+
+    - name: "scanner"
+      path_pattern: "packages/core/src/scanner/**"
+      can_import_from: ["schemas"]
+
+    - name: "importers"
+      path_pattern: "packages/core/src/importers/**"
+      can_import_from: ["schemas"]
+
+    - name: "cli"
+      path_pattern: "packages/cli/src/**"
+      can_import_from: ["@ontoraness/core"]
+
+  patterns:
+    - name: "Discriminated Union 스키마"
+      description: "모든 온톨로지 kind는 AnyOntologySchema discriminated union에 등록"
+      rule: "새 kind 추가 시 schemas/index.ts의 AnyOntologySchema에 반드시 포함"
+
+    - name: "exactOptionalPropertyTypes 호환"
+      description: "optional 필드는 ? 대신 'T | undefined' 타입으로 선언"
+      rule: "인터페이스/타입의 optional 필드: 'field?: T' → 'field: T | undefined'"
+
+  constraints:
+    - "core 패키지는 cli 패키지에 의존하지 않음"
+    - "스키마는 다른 레이어에 의존하지 않음 (최하위)"
+    - "새 AI 서드파티 SDK 추가 금지 (fetch 사용)"

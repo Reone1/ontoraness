@@ -1,0 +1,74 @@
+version: "1.0"
+kind: CodeStyleOntology
+metadata:
+  id: code-style
+  name: "코드 스타일"
+  description: "TypeScript 백엔드 코드 작성 규칙"
+  tier: 2
+  tags: ["code-style", "typescript", "quality"]
+spec:
+  rules:
+    - id: no-any-type
+      name: "any 타입 사용 금지"
+      description: "any 타입은 타입 안전성을 파괴함. unknown 또는 명시적 타입 사용"
+      severity: error
+      enforcement: tier3
+      examples:
+        valid:
+          - "const data: unknown = response.data"
+          - "function parse<T>(raw: unknown): T"
+        invalid:
+          - "const data: any = response.data"
+          - "function handle(req: any)"
+
+    - id: no-magic-numbers
+      name: "매직 넘버 금지"
+      description: "의미 없는 숫자 리터럴 직접 사용 금지. 상수로 정의"
+      severity: warning
+      enforcement: tier2
+      examples:
+        valid:
+          - "const MAX_RETRY_COUNT = 3"
+          - "const TOKEN_EXPIRY_MS = 24 * 60 * 60 * 1000"
+        invalid:
+          - "if (retryCount > 3)"
+          - "setTimeout(fn, 86400000)"
+
+  naming:
+    files: kebab-case
+    classes: PascalCase
+    functions: camelCase
+    constants: UPPER_SNAKE_CASE
+    types: PascalCase
+    interfaces: PascalCase
+
+  limits:
+    file_lines_max: 500
+    file_lines_recommended: 200
+    function_lines_max: 50
+    function_lines_recommended: 20
+
+  prohibitions:
+    - pattern: "\\bany\\b"
+      severity: error
+      message: "any 타입 사용 금지. unknown 또는 명시적 타입 사용"
+
+    - pattern: "console\\.log"
+      severity: error
+      message: "프로덕션 코드에 console.log 금지. logger 사용"
+      context: "production"
+
+    - pattern: "eval\\("
+      severity: error
+      message: "eval() 사용 금지 (보안 취약점)"
+
+  requirements:
+    - "모든 public 함수에 JSDoc 필수"
+    - "복잡한 로직(중첩 3단계 이상)에 설명 주석 필수"
+    - "비동기 함수는 반드시 에러 처리"
+
+  preferred_libraries:
+    validation: "zod"
+    testing: "vitest"
+    http_client: "axios 또는 fetch"
+    logging: "winston 또는 pino"

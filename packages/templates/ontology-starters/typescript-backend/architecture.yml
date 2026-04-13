@@ -1,0 +1,70 @@
+version: "1.0"
+kind: ArchitectureOntology
+metadata:
+  id: architecture
+  name: "아키텍처 규칙"
+  description: "4-레이어 클린 아키텍처 규칙"
+  tier: 2
+  tags: ["architecture", "layer", "dependency"]
+spec:
+  rules:
+    - id: no-circular-deps
+      name: "순환 의존성 금지"
+      description: "레이어 간 순환 참조는 아키텍처를 붕괴시킴"
+      severity: error
+      enforcement: tier3
+      examples:
+        valid:
+          - "presentation → application (단방향)"
+          - "application → domain (단방향)"
+        invalid:
+          - "domain → infrastructure → domain (순환)"
+          - "application → presentation (역방향)"
+
+    - id: no-direct-db-in-presentation
+      name: "presentation에서 DB 직접 접근 금지"
+      description: "DB 접근은 반드시 infrastructure 레이어를 통해서만"
+      severity: error
+      enforcement: tier3
+      examples:
+        invalid:
+          - "components/UserList.tsx에서 prisma.user.findMany() 직접 호출"
+
+    - id: dto-boundary-transform
+      name: "레이어 경계에서 DTO 변환 필수"
+      description: "API 응답에 DB 엔티티를 그대로 반환하지 말 것"
+      severity: warning
+      enforcement: tier2
+
+  layers:
+    - name: presentation
+      path_pattern: "src/{components,pages,app,routes,controllers}/**"
+      can_import_from: [application]
+      cannot_import_from: [infrastructure, domain]
+
+    - name: application
+      path_pattern: "src/{services,usecases,use-cases}/**"
+      can_import_from: [domain]
+      cannot_import_from: [presentation, infrastructure]
+
+    - name: domain
+      path_pattern: "src/{entities,models,domain}/**"
+      can_import_from: []
+
+    - name: infrastructure
+      path_pattern: "src/{repositories,adapters,db,database,prisma}/**"
+      can_import_from: [domain, application]
+
+  patterns:
+    - name: "Repository Pattern"
+      description: "모든 DB 접근은 Repository를 통해서만"
+      rule: "services/**/*.ts는 prisma/typeorm을 직접 import하지 않음"
+
+    - name: "Dependency Inversion"
+      description: "구체 구현이 아닌 인터페이스에 의존"
+      rule: "application 레이어는 infrastructure 구체 클래스가 아닌 인터페이스에 의존"
+
+  constraints:
+    - "순환 의존성 절대 금지"
+    - "DB 직접 접근은 infrastructure 레이어만"
+    - "비즈니스 로직은 application/domain 레이어에만"

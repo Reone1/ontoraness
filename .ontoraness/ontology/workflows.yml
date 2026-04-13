@@ -1,0 +1,69 @@
+version: "1.0"
+kind: WorkflowOntology
+metadata:
+  id: workflows
+  name: "개발 플로우"
+  description: "ontoraness 기능 추가 및 버그 수정 작업 단계"
+  tier: 2
+  tags: ["workflow", "development"]
+spec:
+  rules:
+    - id: schema-before-impl
+      name: "스키마 먼저"
+      description: "새 온톨로지 kind 추가 시 Zod 스키마 정의가 구현보다 선행되어야 함"
+      severity: warning
+      enforcement: tier2
+
+  workflows:
+    - name: "새 온톨로지 kind 추가"
+      trigger: "새로운 종류의 온톨로지 정의가 필요할 때"
+      steps:
+        - "schemas/ 에 새 kind Zod 스키마 파일 작성"
+        - "schemas/index.ts의 AnyOntologySchema discriminated union에 추가"
+        - "ontology/compiler.ts에서 새 kind 처리 로직 추가"
+        - "harness/doc-renderer.ts에 렌더링 함수 추가"
+        - "schemas/__tests__/ 에 테스트 추가"
+        - "templates/ontology-starters/ 에 예시 파일 추가"
+
+    - name: "새 CLI 명령어 추가"
+      trigger: "사용자에게 제공할 새 명령어가 필요할 때"
+      steps:
+        - "packages/cli/src/commands/ 에 새 command 파일 작성"
+        - "packages/cli/src/index.ts 에 등록"
+        - "core 패키지에 필요한 API가 있으면 index.ts에 export 추가"
+        - "빌드 후 --help 로 명령어 노출 확인"
+
+    - name: "새 서브 에이전트 추가"
+      trigger: "GPT, Gemini 외 새 AI 에이전트가 필요할 때"
+      steps:
+        - "packages/core/src/agents/ 에 새 agent 파일 작성 (fetch 직접 사용)"
+        - "base.agent.ts의 SubAgent 인터페이스 구현"
+        - "agent-runner.ts의 registerBuiltinAgents() 에 등록"
+        - "agents.yml 스타터 템플릿의 sub_agents 주석에 추가"
+
+    - name: "버그 수정"
+      trigger: "빌드 오류, 타입 오류, 런타임 오류 발생 시"
+      steps:
+        - "오류 메시지 정확히 파악"
+        - "exactOptionalPropertyTypes 관련 여부 먼저 확인"
+        - "최소한의 변경으로 수정"
+        - "pnpm --filter @ontoraness/core build 로 빌드 확인"
+        - "vitest run 으로 테스트 통과 확인"
+
+  checklists:
+    new-kind:
+      - "schemas/ 파일 작성 및 export"
+      - "AnyOntologySchema union 등록"
+      - "compiler.ts Tier 분류 처리"
+      - "doc-renderer.ts 렌더 함수 작성"
+      - "schemas/__tests__/ 테스트 추가"
+      - "빌드 성공 확인"
+      - "vitest 통과 확인"
+
+    pr-ready:
+      - "pnpm build 전체 성공"
+      - "vitest 전체 통과"
+      - "any 타입 없음"
+      - "require() 없음"
+      - ".js 확장자 import 확인"
+      - "새 export는 index.ts에 등록"

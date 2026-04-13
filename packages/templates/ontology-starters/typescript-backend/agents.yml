@@ -1,0 +1,59 @@
+version: "1.0"
+kind: AgentOntology
+metadata:
+  id: agents
+  name: "에이전트 제약"
+  description: "AI 역할 정의 및 전역 제약"
+  tier: 1
+  tags: ["agent", "constraints"]
+spec:
+  rules:
+    - id: never-hardcode-secrets
+      name: "시크릿 하드코딩 금지"
+      description: "API 키, 비밀번호, 토큰을 코드에 직접 작성 금지. 환경변수 또는 시크릿 매니저 사용"
+      severity: error
+      enforcement: tier1
+      tags: ["never", "security"]
+
+    - id: never-modify-env
+      name: ".env 파일 수정 금지"
+      description: ".env 파일은 직접 수정하지 않음. 환경변수는 .env.example을 통해 문서화"
+      severity: error
+      enforcement: tier1
+      tags: ["never"]
+
+    - id: always-read-before-modify
+      name: "수정 전 코드 파악"
+      description: "파일 변경 전 현재 코드 구조와 패턴을 반드시 파악. 읽지 않은 코드에 대해 추측 금지"
+      severity: warning
+      enforcement: tier1
+      tags: ["always"]
+
+    - id: always-confirm-uncertainty
+      name: "불확실한 경우 확인 요청"
+      description: "요구사항이 불명확하거나 리스크가 있는 작업은 반드시 사용자에게 확인 후 진행"
+      severity: warning
+      enforcement: tier1
+      tags: ["always"]
+
+  roles:
+    - name: "implementer"
+      description: "기능 구현 담당자"
+      responsibilities:
+        - "요구사항 분석 및 구현"
+        - "단위 테스트 작성"
+        - "아키텍처 규칙 준수"
+      must_follow:
+        - "architecture_rules"
+        - "code_style_rules"
+
+  # 서브 에이전트 설정 (API 키 필요)
+  # sub_agents:
+  #   gpt:
+  #     role: "코드 리뷰 second opinion — Claude와 독립적인 시각으로 버그·보안 취약점 감지"
+  #     api_key_env: OPENAI_API_KEY
+  #     model: gpt-4o
+  #   gemini:
+  #     role: "대용량 코드베이스/문서 분석 (1M 컨텍스트)"
+  #     api_key_env: GEMINI_API_KEY
+  #     model: gemini-1.5-pro

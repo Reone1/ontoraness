@@ -1,0 +1,25 @@
+{
+  "name": "ontoraness",
+  "version": "0.0.1",
+  "private": true,
+  "description": "AI Ontology + Harness system for Claude Code",
+  "scripts": {
+    "build": "pnpm -r run build",
+    "test": "pnpm -r run test",
+    "lint": "pnpm -r run lint",
+    "dev": "pnpm -r run dev",
+    "publish:all": "pnpm --filter @ontoraness/core publish && pnpm --filter ontoraness publish",
+    "publish:dry": "pnpm --filter @ontoraness/core publish --dry-run && pnpm --filter ontoraness publish --dry-run",
+    "version:patch": "pnpm -r exec npm version patch --no-git-tag-version",
+    "version:minor": "pnpm -r exec npm version minor --no-git-tag-version"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5",
+    "@types/node": "^20.12.0",
+    "vitest": "^1.5.0"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  }
+}

@@ -1,0 +1,19 @@
+version: "1.0"
+kind: ArchitectureOntology
+metadata:
+  id: architecture
+  name: "아키텍처 규칙"
+  description: "프로젝트 구조 규칙 (최소 구성 — 직접 수정하세요)"
+  tier: 2
+  tags: ["architecture"]
+spec:
+  rules:
+    - id: no-circular-deps
+      name: "순환 의존성 금지"
+      description: "모듈 간 순환 참조 금지"
+      severity: error
+      enforcement: tier3
+
+  # layers: # TODO: 레이어 구조를 정의하세요
+  constraints:
+    - "순환 의존성 금지"

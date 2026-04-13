@@ -1,0 +1,103 @@
+version: "1.0"
+kind: DomainOntology
+metadata:
+  id: domain
+  name: "도메인 모델"
+  description: "ontoraness 핵심 개념과 용어 정의"
+  tier: 2
+  tags: ["domain", "concepts"]
+spec:
+  rules:
+    - id: ontology-is-source-of-truth
+      name: "온톨로지가 마스터 데이터"
+      description: "YAML 파일이 단일 진실 소스. CLAUDE.md, docs/, ESLint 규칙은 모두 온톨로지에서 파생"
+      severity: info
+      enforcement: tier2
+
+  entities:
+    - name: "Ontology"
+      description: "프로젝트 지식(아키텍처/도메인/코드 스타일/에이전트 규칙)을 구조화한 YAML 마스터 데이터"
+      attributes:
+        - name: version
+          type: '"1.0"'
+          description: "스키마 버전 (현재 1.0 고정)"
+        - name: kind
+          type: "OntologyKind"
+          description: "온톨로지 종류 (6개 고정)"
+        - name: metadata
+          type: "OntologyMetadata"
+          description: "id, name, description, tier, tags"
+        - name: spec
+          type: "Record<string, unknown>"
+          description: "kind별 고유 필드"
+      invariants:
+        - "version은 '1.0' 고정"
+        - "kind는 6개 열거형 중 하나"
+        - "metadata.tier는 1, 2, 3 중 하나"
+        - "AgentOntology의 tier는 반드시 1"
+
+    - name: "Rule"
+      description: "온톨로지 내 개별 규칙. 하네스가 Tier별로 분류해 적용 방식을 결정"
+      attributes:
+        - name: id
+          type: "string"
+          description: "고유 식별자 (위반 추적, ESLint 규칙 ID)"
+        - name: severity
+          type: '"error" | "warning" | "info"'
+        - name: enforcement
+          type: '"tier1" | "tier2" | "tier3"'
+          description: "tier1=CLAUDE.md 고정, tier2=docs 주입, tier3=코드 강제"
+
+    - name: "CompiledOntology"
+      description: "여러 YAML 파일을 로드·병합한 런타임 객체. Tier별 규칙 분류 포함"
+      attributes:
+        - name: tier1Rules
+          type: "Rule[]"
+          description: "CLAUDE.md에 고정 주입"
+        - name: tier2Rules
+          type: "Rule[]"
+          description: "작업 감지 시 docs로 주입"
+        - name: tier3Rules
+          type: "Rule[]"
+          description: "ESLint 규칙/훅으로 코드 강제"
+        - name: byId
+          type: "Map<string, AnyOntology>"
+          description: "doc 주입 매핑에 사용"
+
+    - name: "SubAgent"
+      description: "Claude Code 외 서드파티 AI (GPT, Gemini). API 키로 특정 작업을 위임받아 실행"
+      attributes:
+        - name: config
+          type: "AgentConfig"
+        - name: isAvailable
+          type: "() => boolean"
+          description: "API 키 환경변수 존재 여부"
+        - name: run
+          type: "(input: AgentInput) => Promise<AgentOutput>"
+      invariants:
+        - "fetch 직접 사용 (SDK 의존성 없음)"
+        - "Claude가 메인 엔진, 서드파티는 서브 에이전트"
+
+  glossary:
+    - term: "Tier"
+      definition: "규칙 적용 강도. Tier1=항상로드(CLAUDE.md), Tier2=상황별 docs 주입, Tier3=코드 강제(린터/훅)"
+      code_representation: "type EnforcementLevel = 'tier1' | 'tier2' | 'tier3'"
+
+    - term: "Harness"
+      definition: "온톨로지를 컴파일해 Claude Code 컨텍스트에 적절히 분배하는 엔진. 단순 CLAUDE.md 생성기가 아님"
+
+    - term: "Dogfooding"
+      definition: "ontoraness 자체에 ontoraness를 적용하는 것. 이 온톨로지 파일이 그 결과물"
+
+    - term: "Discriminated Union"
+      definition: "kind 필드로 각 온톨로지 타입을 구분하는 TypeScript/Zod 패턴. AnyOntologySchema 참조"
+      code_representation: "z.discriminatedUnion('kind', [ArchitectureOntologySchema, ...])"
+
+  bounded_contexts:
+    - name: "core"
+      owns: ["Ontology", "Rule", "CompiledOntology", "SubAgent"]
+      does_not_touch: ["CLI commands", "User prompts"]
+
+    - name: "cli"
+      owns: ["CLI commands", "User prompts", "Template loading"]
+      does_not_touch: ["Ontology parsing internals", "Zod schemas"]

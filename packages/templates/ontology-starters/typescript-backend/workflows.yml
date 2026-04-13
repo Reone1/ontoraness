@@ -1,0 +1,60 @@
+version: "1.0"
+kind: WorkflowOntology
+metadata:
+  id: workflows
+  name: "작업 플로우"
+  description: "TypeScript 백엔드 개발 작업 단계"
+  tier: 2
+  tags: ["workflow", "process", "development"]
+spec:
+  rules:
+    - id: test-before-complete
+      name: "완료 전 테스트 필수"
+      description: "기능 구현 완료 전 반드시 유닛 테스트 작성 및 통과 확인"
+      severity: warning
+      enforcement: tier2
+
+  workflows:
+    - name: "기능 개발"
+      trigger: "새 기능 구현 요청 시"
+      steps:
+        - "요구사항 분석 및 도메인 모델 확인"
+        - "영향받는 레이어 식별"
+        - "인터페이스/타입 먼저 정의"
+        - "구현 (domain → application → infrastructure → presentation 순)"
+        - "유닛 테스트 작성"
+        - "통합 테스트 확인"
+        - "코드 리뷰 체크리스트 자체 검토"
+
+    - name: "버그 수정"
+      trigger: "버그 또는 에러 발생 시"
+      steps:
+        - "재현 조건 파악"
+        - "원인 분석 (로그, 테스트)"
+        - "최소한의 변경으로 수정"
+        - "회귀 테스트 추가"
+        - "관련 테스트 전체 통과 확인"
+
+    - name: "리팩토링"
+      trigger: "코드 개선 요청 시"
+      steps:
+        - "기존 테스트 모두 통과 확인"
+        - "변경 범위 최소화"
+        - "한 번에 하나씩 변경"
+        - "각 변경 후 테스트 통과 확인"
+
+  checklists:
+    pre-commit:
+      - "파일 500줄 이하"
+      - "any 타입 없음"
+      - "console.log 없음"
+      - "모든 public 함수 JSDoc 있음"
+      - "유닛 테스트 통과"
+      - "ESLint 오류 없음"
+
+    code-review:
+      - "아키텍처 레이어 규칙 준수"
+      - "의존성 방향 올바름"
+      - "에러 처리 적절함"
+      - "타입 안전성 확보"
+      - "불필요한 any 없음"

@@ -1,0 +1,23 @@
+version: "1.0"
+kind: AgentOntology
+metadata:
+  id: agents
+  name: "에이전트 제약"
+  description: "AI 전역 제약 (최소 구성)"
+  tier: 1
+  tags: ["agent", "constraints"]
+spec:
+  rules:
+    - id: never-hardcode-secrets
+      name: "시크릿 하드코딩 금지"
+      description: "API 키, 비밀번호를 코드에 직접 작성 금지"
+      severity: error
+      enforcement: tier1
+      tags: ["never", "security"]
+
+    - id: always-read-before-modify
+      name: "수정 전 코드 파악"
+      description: "변경 전 현재 코드 구조를 반드시 파악"
+      severity: warning
+      enforcement: tier1
+      tags: ["always"]

@@ -1,0 +1,29 @@
+version: "1.0"
+project:
+  name: "ontoraness"
+  description: "AI 온톨로지 + 하네스 시스템 — Claude Code 위에서 동작하는 프로젝트 규칙 자동화 도구"
+
+output:
+  claude_md: "CLAUDE.md"
+  docs_dir: ".ontoraness/docs"
+
+context_injection:
+  "packages/core/src/ontology/schemas/**": ["architecture", "domain", "code-style"]
+  "packages/core/src/ontology/**":         ["architecture", "domain"]
+  "packages/core/src/harness/**":          ["architecture", "workflows"]
+  "packages/core/src/adapters/**":         ["architecture", "code-style"]
+  "packages/core/src/agents/**":           ["architecture", "domain"]
+  "packages/core/src/scanner/**":          ["workflows"]
+  "packages/cli/src/commands/**":          ["workflows", "code-style"]
+  "**/*.schema.ts":                        ["domain", "architecture"]
+  "**/*.test.ts":                          ["workflows"]
+
+adapters:
+  claude-code:
+    enabled: true
+    append: |
+      ## 빌드 명령어
+      - 전체 빌드: `pnpm build`
+      - core만: `pnpm --filter @ontoraness/core build`
+      - 테스트: `pnpm --filter @ontoraness/core test`
+      - CLI 로컬 실행: `node packages/cli/dist/index.js <command>`

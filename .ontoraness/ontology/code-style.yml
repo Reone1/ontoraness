@@ -1,0 +1,74 @@
+version: "1.0"
+kind: CodeStyleOntology
+metadata:
+  id: code-style
+  name: "코드 스타일"
+  description: "ontoraness TypeScript 코드 작성 규칙"
+  tier: 2
+  tags: ["code-style", "typescript", "esm"]
+spec:
+  rules:
+    - id: no-any-type
+      name: "any 타입 금지"
+      description: "any 타입은 Zod 스키마 기반 프로젝트의 타입 안전성을 파괴. unknown 또는 명시적 타입 사용"
+      severity: error
+      enforcement: tier3
+      examples:
+        valid:
+          - "const data: unknown = yaml.load(raw)"
+          - "const onto = yaml.load(raw) as Record<string, unknown>"
+        invalid:
+          - "const data: any = yaml.load(raw)"
+
+    - id: js-extension-imports
+      name: "import 경로에 .js 확장자 필수"
+      description: "ESM + NodeNext 모드에서 상대 경로 import는 반드시 .js 확장자 포함 (TS 소스도 .js)"
+      severity: error
+      enforcement: tier3
+      examples:
+        valid:
+          - "import { loader } from './loader.js'"
+        invalid:
+          - "import { loader } from './loader'"
+          - "import { loader } from './loader.ts'"
+
+  naming:
+    files: kebab-case
+    classes: PascalCase
+    functions: camelCase
+    constants: UPPER_SNAKE_CASE
+    types: PascalCase
+    interfaces: PascalCase
+
+  limits:
+    file_lines_max: 500
+    file_lines_recommended: 200
+    function_lines_max: 60
+    function_lines_recommended: 30
+
+  prohibitions:
+    - pattern: "\\bany\\b"
+      severity: error
+      message: "any 타입 금지. unknown 또는 명시적 타입 사용"
+
+    - pattern: "console\\.log"
+      severity: warning
+      message: "console.log 대신 process.stdout.write 또는 제거"
+      context: "production"
+
+    - pattern: "require\\("
+      severity: error
+      message: "CommonJS require() 금지. ESM import 사용"
+
+  requirements:
+    - "Zod 스키마 변경 시 AnyOntologySchema discriminated union 업데이트 필수"
+    - "새 public API 추가 시 index.ts export 추가"
+    - "exactOptionalPropertyTypes: optional 필드는 'T | undefined' 형태로"
+
+  preferred_libraries:
+    yaml_parsing: "js-yaml"
+    schema_validation: "zod"
+    template_rendering: "eta"
+    testing: "vitest"
+    build: "tsup"
+    package_manager: "pnpm"

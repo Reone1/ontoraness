@@ -1,0 +1,71 @@
+version: "1.0"
+kind: AgentOntology
+metadata:
+  id: agents
+  name: "에이전트 제약"
+  description: "ontoraness 개발 시 AI 전역 제약"
+  tier: 1
+  tags: ["agent", "constraints"]
+spec:
+  rules:
+    - id: never-hardcode-secrets
+      name: "시크릿 하드코딩 금지"
+      description: "API 키(ANTHROPIC, OPENAI, GEMINI)를 코드에 직접 작성 금지. 환경변수 사용"
+      severity: error
+      enforcement: tier1
+      tags: ["never", "security"]
+
+    - id: never-break-esm
+      name: "ESM 호환성 파괴 금지"
+      description: "require(), __dirname, __filename 직접 사용 금지. import.meta.url 패턴 사용"
+      severity: error
+      enforcement: tier1
+      tags: ["never"]
+      examples:
+        invalid:
+          - "const x = require('module')"
+          - "path.join(__dirname, 'file')"
+        valid:
+          - "import { x } from 'module'"
+          - "dirname(fileURLToPath(import.meta.url))"
+
+    - id: always-read-before-modify
+      name: "수정 전 코드 파악"
+      description: "파일 변경 전 현재 구조와 패턴을 반드시 파악. 특히 Zod 스키마 변경 시 영향도 확인"
+      severity: warning
+      enforcement: tier1
+      tags: ["always"]
+
+    - id: always-exactoptional
+      name: "exactOptionalPropertyTypes 준수"
+      description: "tsconfig의 exactOptionalPropertyTypes: true 로 인해 optional 필드는 반드시 'T | undefined' 형태로 선언"
+      severity: warning
+      enforcement: tier1
+      tags: ["always"]
+
+  roles:
+    - name: "core-developer"
+      description: "핵심 엔진(core 패키지) 개발"
+      responsibilities:
+        - "Zod 스키마 정의 및 유지"
+        - "컴파일러·렌더러·어댑터 구현"
+        - "하위 호환성 유지"
+      forbidden:
+        - "CLI 명령어 직접 수정 (cli 패키지 담당)"
+
+    - name: "cli-developer"
+      description: "CLI 인터페이스(cli 패키지) 개발"
+      responsibilities:
+        - "사용자 UX 설계"
+        - "core 패키지 API 호출"
+      forbidden:
+        - "core 패키지 내부 구현 직접 수정"
+
+  # 서브 에이전트 (API 키 설정 시 활성화)
+  # sub_agents:
+  #   gpt:
+  #     role: "코드 리뷰 second opinion"
+  #     api_key_env: OPENAI_API_KEY
+  #   gemini:
+  #     role: "대용량 코드베이스 분석"
+  #     api_key_env: GEMINI_API_KEY
