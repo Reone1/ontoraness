@@ -1,5 +1,8 @@
 import { Command } from "commander";
 import { confirm } from "@inquirer/prompts";
+import { readdir } from "node:fs/promises";
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 import {
   loadStats,
   analyzeStats,
@@ -16,6 +19,9 @@ export const reportCommand = new Command("report")
     async (opts: { days: string; metric?: string; suggest?: boolean }) => {
       const periodDays = parseInt(opts.days, 10) || 30;
 
+      // 현재 존재하는 docs ID 목록 수집 (unused_docs 계산용)
+      const knownDocIds = await getKnownDocIds(".ontoraness/docs");
+
       const data = await loadStats(".");
 
       if (!data) {
@@ -27,7 +33,7 @@ export const reportCommand = new Command("report")
         return;
       }
 
-      const report = analyzeStats(data, periodDays);
+      const report = analyzeStats(data, periodDays, knownDocIds);
 
       // 특정 지표 상세 조회
       if (opts.metric) {
@@ -84,3 +90,16 @@ export const reportCommand = new Command("report")
       }
     }
   );
+
+/** .ontoraness/docs/ 에 존재하는 doc ID 목록 반환 (unused_docs 계산용) */
+async function getKnownDocIds(docsDir: string): Promise<string[]> {
+  if (!existsSync(docsDir)) return [];
+  try {
+    const files = await readdir(docsDir);
+    return files
+      .filter((f) => f.endsWith(".md"))
+      .map((f) => f.replace(/\.md$/, ""));
+  } catch {
+    return [];
+  }
+}

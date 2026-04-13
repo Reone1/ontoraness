@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { join, extname, relative } from "node:path";
 import yaml from "js-yaml";
+import { recordEvent } from "./stats/collector.js";
 
 /** harness.config.yml에서 읽어오는 컨텍스트 주입 매핑 */
 interface HarnessConfig {
@@ -74,6 +75,11 @@ export async function injectContext(
   }
 
   if (sections.length === 0) return;
+
+  // 통계 기록 (doc_injected 이벤트)
+  for (const docId of docIds) {
+    await recordEvent({ event: "doc_injected", doc_id: docId, file_path: filePath }, rootDir);
+  }
 
   // Claude Code에 주입될 컨텍스트 출력
   process.stdout.write(

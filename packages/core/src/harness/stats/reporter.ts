@@ -38,7 +38,8 @@ export interface StatsReport {
  */
 export function analyzeStats(
   data: StatsData,
-  periodDays: number = 30
+  periodDays: number = 30,
+  knownDocIds: string[] = []
 ): StatsReport {
   const events = filterEventsByPeriod(data.events, periodDays);
 
@@ -97,7 +98,8 @@ export function analyzeStats(
     compliance_rate: complianceRate,
     top_violations: topViolations,
     doc_injection_counts: docCounts,
-    unused_docs: [], // generate 시 알려진 docs 목록과 비교해야 채울 수 있음
+    // 알려진 docs 중 한 번도 주입 안 된 것 — 경로 매핑 수정 또는 doc 제거 신호
+    unused_docs: knownDocIds.filter((id) => !(id in docCounts)),
     custom_metrics: customMetrics,
     ontology_changes: ontologyChanges,
   };
